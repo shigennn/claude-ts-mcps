@@ -1,0 +1,46 @@
+{
+    "mcpServers": {
+      "brave-search": {
+        "command": "C:\\Users\\<username>\\.bun\\bin\\bun.exe",
+        "args": [
+          "run",
+          "C:\\Users\\<username>\\path\\claude-ts-mcps\\src\\brave-search.ts"
+        ],
+        "env": {
+          "BRAVE_API_KEY": ""
+        }
+      },
+      "filesystem": {
+        "command": "C:\\Users\\<username>\\.bun\\bin\\bun.exe",
+        "args": [
+          "run",
+          "C:\\Users\\<username>\\path\\claude-ts-mcps\\src\\filesystem.ts",
+          "C:\\Users\\<username>"
+        ]
+      },
+      "git": {
+        "command": "C:\\Users\\<username>\\.bun\\bin\\bun.exe",
+        "args": [
+          "run",
+          "C:\\Users\\<username>\\path\\claude-ts-mcps\\src\\git.ts"
+        ]
+      },
+      "github": {
+        "command": "C:\\Users\\<username>\\.bun\\bin\\bun.exe",
+        "args": [
+          "run",
+          "C:\\Users\\<username>\\path\\claude-ts-mcps\\src\\github.ts"
+        ],
+        "env": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+        }
+      },
+      "shell": {
+        "command": "C:\\Users\\<username>\\.bun\\bin\\bun.exe",
+        "args": [
+          "run",
+          "C:\\Users\\<username>\\path\\claude-ts-mcps\\src\\shell.ts"
+        ]
+      }
+    }
+  }
