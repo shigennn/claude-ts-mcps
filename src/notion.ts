@@ -57,7 +57,20 @@ server.tool(
   {
     page_id: z.string().describe("Notion page ID")
   },
-  async (args) => getPage(notion, args.page_id)
+  async (args) => {
+    try {
+      const result = await getPage(notion, args.page_id)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -73,7 +86,20 @@ server.tool(
     content: z.string().describe("Page content in text format"),
     is_database: z.boolean().optional().default(false).describe("Whether parent is a database")
   },
-  async (args) => createPage(notion, args.parent_id, args.title, args.content, args.is_database)
+  async (args) => {
+    try {
+      const result = await createPage(notion, args.parent_id, args.title, args.content, args.is_database)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -84,7 +110,20 @@ server.tool(
   "notion_list_databases",
   "Lists all databases in the Notion workspace",
   {},
-  async () => listDatabases(notion)
+  async () => {
+    try {
+      const result = await listDatabases(notion)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -99,7 +138,20 @@ server.tool(
     filter: z.record(z.any()).optional().describe("Filter criteria (optional)"),
     sorts: z.array(z.record(z.any())).optional().describe("Sort criteria (optional)")
   },
-  async (args) => queryDatabase(notion, args.database_id, args.filter, args.sorts)
+  async (args) => {
+    try {
+      const result = await queryDatabase(notion, args.database_id, args.filter, args.sorts)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -113,7 +165,20 @@ server.tool(
     query: z.string().describe("Search query"),
     filter_type: z.enum(["page", "database", "all"]).optional().default("all").describe("Type to filter by")
   },
-  async (args) => searchContent(notion, args.query, args.filter_type)
+  async (args) => {
+    try {
+      const result = await searchContent(notion, args.query, args.filter_type)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -126,7 +191,20 @@ server.tool(
   {
     database_id: z.string().describe("Notion database ID")
   },
-  async (args) => getDatabase(notion, args.database_id)
+  async (args) => {
+    try {
+      const result = await getDatabase(notion, args.database_id)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -141,7 +219,20 @@ server.tool(
     title: z.string().optional().describe("New title (optional)"),
     properties: z.record(z.any()).optional().describe("Other properties to update")
   },
-  async (args) => updatePage(notion, args.page_id, args.title, args.properties)
+  async (args) => {
+    try {
+      const result = await updatePage(notion, args.page_id, args.title, args.properties)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 /**
@@ -155,7 +246,20 @@ server.tool(
     block_id: z.string().describe("Page or block ID to append content to"),
     text_content: z.string().describe("Text content to add")
   },
-  async (args) => appendBlocks(notion, args.block_id, args.text_content)
+  async (args) => {
+    try {
+      const result = await appendBlocks(notion, args.block_id, args.text_content)
+      return {
+        content: result.content,
+        isError: result.isError
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
+        isError: true
+      }
+    }
+  }
 )
 
 // サーバー起動
