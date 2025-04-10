@@ -1,275 +1,349 @@
 /**
- * Notion APIを利用したModel Context Protocol(MCP)サーバーの実装
- * NotionワークスペースへのアクセスとページやデータベースのAPIを提供する
+ * Notion MCP Server
+ * このサーバーはNotion APIと統合し、Claude AIがNotionワークスペースと対話することを可能にします。
+ * また、マークダウン変換を使用してLLMとの通信時のコンテキストサイズを削減し、トークン使用量を
+ * 最適化し、対話をより効率的にします。
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
-import { z } from "zod"
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequest,
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
 
-// Notion APIクライアントのインポート
-import { Client } from "@notionhq/client"
+import { NotionClientWrapper } from "./notion/client.js";
+import { filterTools } from "./notion/utils.js";
+import * as schemas from "./notion/schemas.js";
+import * as args from "./notion/args.js";
 
-// モジュールのインポート
-import { 
-  getPage, 
-  createPage, 
-  updatePage, 
-  appendBlocks 
-} from "./notion-pages"
-
-import { 
-  listDatabases, 
-  getDatabase, 
-  queryDatabase, 
-  searchContent 
-} from "./notion-database"
-
-/**
- * MCPサーバーの初期化
- * サーバー名、バージョンを定義
- */
-const server = new McpServer({
-  name: "notion-mcp",
-  version: "0.1.0",
-})
-
-/**
- * APIキーの確認
- * 環境変数からNotion APIキーを取得し、存在しない場合はエラーを表示して終了
- */
-const NOTION_API_KEY = process.env.NOTION_API_KEY!
-if (!NOTION_API_KEY) {
-  console.error("Error: NOTION_API_KEY environment variable is required")
-  process.exit(1)
+// 環境変数からNotionトークンを取得
+const NOTION_API_TOKEN = process.env.NOTION_API_KEY;
+if (!NOTION_API_TOKEN) {
+  console.error("Error: NOTION_API_KEY environment variable is required");
+  process.exit(1);
 }
 
-// Notionクライアントの初期化
-const notion = new Client({ auth: NOTION_API_KEY })
+// マークダウン変換の有効/無効
+const enableMarkdownConversion = true;
+
+// 有効なツールのセット（デフォルトですべてのツールが有効）
+const enabledToolsSet = new Set<string>();
 
 /**
- * ページ取得ツール
- * 指定されたIDのNotionページを取得し、メタデータとコンテンツを返す
+ * MCPサーバーをセットアップして起動する
  */
-server.tool(
-  "notion_get_page",
-  "Retrieves a page from Notion by its ID",
-  {
-    page_id: z.string().describe("Notion page ID")
-  },
-  async (args) => {
-    try {
-      const result = await getPage(notion, args.page_id)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * ページ作成ツール
- * 指定された親ページまたはデータベース内に新しいページを作成する
- */
-server.tool(
-  "notion_create_page",
-  "Creates a new page in Notion with title and content",
-  {
-    parent_id: z.string().describe("Parent page or database ID"),
-    title: z.string().describe("Page title"),
-    content: z.string().describe("Page content in text format"),
-    is_database: z.boolean().optional().default(false).describe("Whether parent is a database")
-  },
-  async (args) => {
-    try {
-      const result = await createPage(notion, args.parent_id, args.title, args.content, args.is_database)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * データベース検索ツール
- * Notionワークスペース内のデータベース一覧を取得する
- */
-server.tool(
-  "notion_list_databases",
-  "Lists all databases in the Notion workspace",
-  {},
-  async () => {
-    try {
-      const result = await listDatabases(notion)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * データベースクエリツール
- * 指定されたデータベースに対してクエリを実行し、結果を返す
- */
-server.tool(
-  "notion_query_database",
-  "Queries a Notion database and returns the results",
-  {
-    database_id: z.string().describe("Notion database ID"),
-    filter: z.record(z.any()).optional().describe("Filter criteria (optional)"),
-    sorts: z.array(z.record(z.any())).optional().describe("Sort criteria (optional)")
-  },
-  async (args) => {
-    try {
-      const result = await queryDatabase(notion, args.database_id, args.filter, args.sorts)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * ワークスペース検索ツール
- * Notionワークスペース内のコンテンツを検索する
- */
-server.tool(
-  "notion_search",
-  "Searches content across the Notion workspace",
-  {
-    query: z.string().describe("Search query"),
-    filter_type: z.enum(["page", "database", "all"]).optional().default("all").describe("Type to filter by")
-  },
-  async (args) => {
-    try {
-      const result = await searchContent(notion, args.query, args.filter_type)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * データベース情報取得ツール
- * 指定されたデータベースのメタデータを取得する
- */
-server.tool(
-  "notion_get_database",
-  "Retrieves database metadata including its properties and schema",
-  {
-    database_id: z.string().describe("Notion database ID")
-  },
-  async (args) => {
-    try {
-      const result = await getDatabase(notion, args.database_id)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * ページの更新ツール
- * 既存のページのタイトルや他のプロパティを更新する
- */
-server.tool(
-  "notion_update_page",
-  "Updates properties of an existing Notion page",
-  {
-    page_id: z.string().describe("Page ID to update"),
-    title: z.string().optional().describe("New title (optional)"),
-    properties: z.record(z.any()).optional().describe("Other properties to update")
-  },
-  async (args) => {
-    try {
-      const result = await updatePage(notion, args.page_id, args.title, args.properties)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-/**
- * ページにブロックを追加するツール
- * 既存のページに新しいテキストブロックを追加する
- */
-server.tool(
-  "notion_append_blocks",
-  "Appends text blocks to an existing page",
-  {
-    block_id: z.string().describe("Page or block ID to append content to"),
-    text_content: z.string().describe("Text content to add")
-  },
-  async (args) => {
-    try {
-      const result = await appendBlocks(notion, args.block_id, args.text_content)
-      return {
-        content: result.content,
-        isError: result.isError
-      }
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-        isError: true
-      }
-    }
-  }
-)
-
-// サーバー起動
 async function runServer() {
-  const transport = new StdioServerTransport()
-  await server.connect(transport)
-  console.error("Notion MCP Server running on stdio")
+  const server = new Server(
+    {
+      name: "Notion MCP Server",
+      version: "1.0.0",
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
+
+  const notionClient = new NotionClientWrapper(NOTION_API_TOKEN);
+
+  server.setRequestHandler(
+    CallToolRequestSchema,
+    async (request: CallToolRequest) => {
+      console.error("Received CallToolRequest:", request);
+      try {
+        if (!request.params.arguments) {
+          throw new Error("No arguments provided");
+        }
+
+        let response;
+
+        switch (request.params.name) {
+          case "notion_append_block_children": {
+            const args = request.params
+              .arguments as unknown as args.AppendBlockChildrenArgs;
+            if (!args.block_id || !args.children) {
+              throw new Error(
+                "Missing required arguments: block_id and children"
+              );
+            }
+            response = await notionClient.appendBlockChildren(
+              args.block_id,
+              args.children
+            );
+            break;
+          }
+
+          case "notion_retrieve_block": {
+            const args = request.params
+              .arguments as unknown as args.RetrieveBlockArgs;
+            if (!args.block_id) {
+              throw new Error("Missing required argument: block_id");
+            }
+            response = await notionClient.retrieveBlock(args.block_id);
+            break;
+          }
+
+          case "notion_retrieve_block_children": {
+            const args = request.params
+              .arguments as unknown as args.RetrieveBlockChildrenArgs;
+            if (!args.block_id) {
+              throw new Error("Missing required argument: block_id");
+            }
+            response = await notionClient.retrieveBlockChildren(
+              args.block_id,
+              args.start_cursor,
+              args.page_size
+            );
+            break;
+          }
+
+          case "notion_delete_block": {
+            const args = request.params
+              .arguments as unknown as args.DeleteBlockArgs;
+            if (!args.block_id) {
+              throw new Error("Missing required argument: block_id");
+            }
+            response = await notionClient.deleteBlock(args.block_id);
+            break;
+          }
+
+          case "notion_update_block": {
+            const args = request.params
+              .arguments as unknown as args.UpdateBlockArgs;
+            if (!args.block_id || !args.block) {
+              throw new Error("Missing required arguments: block_id and block");
+            }
+            response = await notionClient.updateBlock(
+              args.block_id,
+              args.block
+            );
+            break;
+          }
+
+          case "notion_retrieve_page": {
+            const args = request.params
+              .arguments as unknown as args.RetrievePageArgs;
+            if (!args.page_id) {
+              throw new Error("Missing required argument: page_id");
+            }
+            response = await notionClient.retrievePage(args.page_id);
+            break;
+          }
+
+          case "notion_update_page_properties": {
+            const args = request.params
+              .arguments as unknown as args.UpdatePagePropertiesArgs;
+            if (!args.page_id || !args.properties) {
+              throw new Error(
+                "Missing required arguments: page_id and properties"
+              );
+            }
+            response = await notionClient.updatePageProperties(
+              args.page_id,
+              args.properties
+            );
+            break;
+          }
+
+          case "notion_list_all_users": {
+            const args = request.params
+              .arguments as unknown as args.ListAllUsersArgs;
+            response = await notionClient.listAllUsers(
+              args.start_cursor,
+              args.page_size
+            );
+            break;
+          }
+
+          case "notion_retrieve_user": {
+            const args = request.params
+              .arguments as unknown as args.RetrieveUserArgs;
+            if (!args.user_id) {
+              throw new Error("Missing required argument: user_id");
+            }
+            response = await notionClient.retrieveUser(args.user_id);
+            break;
+          }
+
+          case "notion_retrieve_bot_user": {
+            response = await notionClient.retrieveBotUser();
+            break;
+          }
+
+          case "notion_query_database": {
+            const args = request.params
+              .arguments as unknown as args.QueryDatabaseArgs;
+            if (!args.database_id) {
+              throw new Error("Missing required argument: database_id");
+            }
+            response = await notionClient.queryDatabase(
+              args.database_id,
+              args.filter,
+              args.sorts,
+              args.start_cursor,
+              args.page_size
+            );
+            break;
+          }
+
+          case "notion_create_database": {
+            const args = request.params
+              .arguments as unknown as args.CreateDatabaseArgs;
+            response = await notionClient.createDatabase(
+              args.parent,
+              args.properties,
+              args.title
+            );
+            break;
+          }
+
+          case "notion_retrieve_database": {
+            const args = request.params
+              .arguments as unknown as args.RetrieveDatabaseArgs;
+            response = await notionClient.retrieveDatabase(args.database_id);
+            break;
+          }
+
+          case "notion_update_database": {
+            const args = request.params
+              .arguments as unknown as args.UpdateDatabaseArgs;
+            response = await notionClient.updateDatabase(
+              args.database_id,
+              args.title,
+              args.description,
+              args.properties
+            );
+            break;
+          }
+
+          case "notion_create_database_item": {
+            const args = request.params
+              .arguments as unknown as args.CreateDatabaseItemArgs;
+            response = await notionClient.createDatabaseItem(
+              args.database_id,
+              args.properties
+            );
+            break;
+          }
+
+          case "notion_create_comment": {
+            const args = request.params
+              .arguments as unknown as args.CreateCommentArgs;
+
+            if (!args.parent && !args.discussion_id) {
+              throw new Error(
+                "Either parent.page_id or discussion_id must be provided"
+              );
+            }
+
+            response = await notionClient.createComment(
+              args.parent,
+              args.discussion_id,
+              args.rich_text
+            );
+            break;
+          }
+
+          case "notion_retrieve_comments": {
+            const args = request.params
+              .arguments as unknown as args.RetrieveCommentsArgs;
+            if (!args.block_id) {
+              throw new Error("Missing required argument: block_id");
+            }
+            response = await notionClient.retrieveComments(
+              args.block_id,
+              args.start_cursor,
+              args.page_size
+            );
+            break;
+          }
+
+          case "notion_search": {
+            const args = request.params.arguments as unknown as args.SearchArgs;
+            response = await notionClient.search(
+              args.query,
+              args.filter,
+              args.sort,
+              args.start_cursor,
+              args.page_size
+            );
+            break;
+          }
+
+          default:
+            throw new Error(`Unknown tool: ${request.params.name}`);
+        }
+
+        // レスポンスフォーマットを確認して適切なレスポンスを返す
+        const requestedFormat = (request.params.arguments as any)?.format || "markdown";
+
+        // 条件を満たす場合のみマークダウン変換を実行
+        // 1. リクエストされたフォーマットがマークダウンである
+        // 2. 環境変数を通じてマークダウン変換が有効化されている
+        if (enableMarkdownConversion && requestedFormat === "markdown") {
+          const markdown = await notionClient.toMarkdown(response);
+          return {
+            content: [{ type: "text", text: markdown }],
+          };
+        } else {
+          return {
+            content: [
+              { type: "text", text: JSON.stringify(response, null, 2) },
+            ],
+          };
+        }
+      } catch (error) {
+        console.error("Error executing tool:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                error: error instanceof Error ? error.message : String(error),
+              }),
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    const allTools = [
+      schemas.appendBlockChildrenTool,
+      schemas.retrieveBlockTool,
+      schemas.retrieveBlockChildrenTool,
+      schemas.deleteBlockTool,
+      schemas.updateBlockTool,
+      schemas.retrievePageTool,
+      schemas.updatePagePropertiesTool,
+      schemas.listAllUsersTool,
+      schemas.retrieveUserTool,
+      schemas.retrieveBotUserTool,
+      schemas.createDatabaseTool,
+      schemas.queryDatabaseTool,
+      schemas.retrieveDatabaseTool,
+      schemas.updateDatabaseTool,
+      schemas.createDatabaseItemTool,
+      schemas.createCommentTool,
+      schemas.retrieveCommentsTool,
+      schemas.searchTool,
+    ];
+    return {
+      tools: filterTools(allTools, enabledToolsSet),
+    };
+  });
+
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("Notion MCP Server running");
 }
 
+// サーバーを起動
 runServer().catch((error) => {
-  console.error("Fatal error running server:", error)
-  process.exit(1)
-})
+  console.error("Fatal error running server:", error);
+  process.exit(1);
+});
