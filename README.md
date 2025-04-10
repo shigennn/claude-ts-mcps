@@ -1,43 +1,43 @@
-# Claude Desktop MCP サーバー集
+# Claude Desktop MCP Servers
 
-Claude Desktop アプリケーションと Model Context Protocol (MCP) を活用して、様々な外部サービスとの連携を実現するためのサーバー集です。このプロジェクトは、Claude Pro のサブスクリプションを最大限に活用し、Claude AIに追加の機能を提供します。
+A collection of Model Context Protocol (MCP) servers designed to enhance Claude Desktop with various integrations and capabilities. This project leverages the Claude Pro subscription by enabling Claude AI to interact with external services and APIs through the Model Context Protocol.
 
-## 概要
+## Overview
 
-このプロジェクトでは、以下のようなMCPサーバーを実装しています：
+This project implements several MCP servers that significantly expand Claude Desktop's functionality:
 
-- **Brave Search**: Web検索と位置情報検索機能を提供（Brave Search API使用）
-- **Filesystem**: ファイルシステム操作（セキュリティ制限付き）
-- **Git**: Gitリポジトリ管理機能
-- **GitHub**: GitHub APIとの連携（リポジトリ、Issue、PRなど）
-- **Shell**: シェルコマンド実行環境
-- **Figma**: FigmaのAPIとの連携
-- **Slack**: Slack APIとの連携
-- **Firecrawl**: Webスクレイピング機能
-- **Notion**: Notion APIとの連携（マークダウン変換機能付き）
+- **Brave Search**: Web search and local search functionality using the Brave Search API
+- **Filesystem**: File system operations with security restrictions
+- **Git**: Git repository management functionality
+- **GitHub**: GitHub API integration for repositories, issues, pull requests, and more
+- **Shell**: Shell command execution in a controlled environment
+- **Figma**: Integration with Figma API for design files
+- **Slack**: Slack API integration for messaging and channel information
+- **Firecrawl**: Web scraping capabilities
+- **Notion**: Notion API integration with markdown conversion for improved readability
 
-## 要件
+## Requirements
 
-- [Node.js](https://nodejs.org/) (v18以上)
-- [Bun](https://bun.sh/) (JavaScript/TypeScriptランタイム)
-- [Claude Desktop](https://anthropic.com/claude) アプリケーション
+- [Node.js](https://nodejs.org/) (v18+)
+- [Bun](https://bun.sh/) as the JavaScript/TypeScript runtime
+- [Claude Desktop](https://anthropic.com/claude) application
 
-## インストール方法
+## Installation
 
-1. リポジトリをクローン：
+1. Clone the repository:
    ```
-   git clone https://github.com/yourname/claude-ts-mcps.git
+   git clone https://github.com/yourusername/claude-ts-mcps.git
    cd claude-ts-mcps
    ```
 
-2. 依存関係のインストール：
+2. Install dependencies:
    ```
    bun install
    ```
 
-## 設定方法
+## Configuration
 
-Claude Desktopでこれらのサーバーを使用するには、設定ファイルを作成してClaude Desktopに読み込ませる必要があります。以下は設定例です：
+To use these MCP servers with Claude Desktop, you need to create a configuration file that tells Claude how to connect to them. Here's a complete example based on the actual implementation:
 
 ```json
 {
@@ -77,6 +77,44 @@ Claude Desktopでこれらのサーバーを使用するには、設定ファイ
         "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN"
       }
     },
+    "shell": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\shell.ts"
+      ]
+    },
+    "figma": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\figma.ts"
+      ],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "YOUR_FIGMA_TOKEN"
+      }
+    },
+    "slack": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\slack.ts"
+      ],
+      "env": {
+        "SLACK_BOT_TOKEN": "YOUR_SLACK_BOT_TOKEN",
+        "SLACK_TEAM_ID": "YOUR_SLACK_TEAM_ID"
+      }
+    },
+    "firecrawl": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\firecrawl.ts"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_API_KEY"
+      }
+    },
     "notion": {
       "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
       "args": [
@@ -84,100 +122,115 @@ Claude Desktopでこれらのサーバーを使用するには、設定ファイ
         "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\notion.ts"
       ],
       "env": {
-        "NOTION_API_KEY": "YOUR_NOTION_TOKEN"
+        "NOTION_API_KEY": "YOUR_NOTION_API_KEY"
       }
     }
   }
 }
 ```
 
-この設定ファイルを `%APPDATA%\Claude\claude_desktop_config.json`（Windowsの場合）または `~/Library/Application Support/Claude/claude_desktop_config.json`（Macの場合）に保存してください。
+Save this configuration file in the appropriate location:
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-## 使用方法
+### API Keys and Tokens Setup
 
-1. Claude Desktopを起動
-2. MCPサーバーが自動的に接続されます
-3. チャット中に各種外部サービスとの連携機能が利用可能になります
+For each service integration, you'll need to obtain and configure the appropriate API keys:
 
-## 機能詳細
+1. **Brave Search API**: Sign up at [Brave Search API](https://brave.com/search/api/) to get your API key
+2. **GitHub**: Create a [personal access token](https://github.com/settings/tokens) with appropriate permissions
+3. **Figma**: Generate an [access token](https://www.figma.com/developers/api#access-tokens) in your Figma account
+4. **Slack**: Create a [Slack app](https://api.slack.com/apps) and generate a bot token
+5. **Firecrawl**: Sign up for a Firecrawl API key
+6. **Notion**: Create an [integration](https://www.notion.so/my-integrations) and get the API key
 
-### Notion連携
+Replace the placeholder values in the configuration file with your actual API keys and tokens.
 
-Notion APIと連携し、以下の機能を提供します：
+## Usage
 
-- ページ、データベース、ブロックの取得・作成・更新・削除
-- 検索機能
-- マークダウン変換機能（読みやすさ向上）
-- データベースクエリ機能
-- コメント機能
+1. Start Claude Desktop
+2. The MCP servers will automatically connect
+3. Claude will now have access to all the integrated services during your conversations
 
-### GitHub連携
+## Feature Details
 
-GitHubとの連携により、以下の操作が可能になります：
+### Notion Integration
 
-- リポジトリの作成・検索・操作
-- ファイルの取得・更新・コミット
-- イシューとプルリクエストの管理
-- 複数アカウントのサポート
+The Notion integration provides:
 
-### ファイルシステム
+- Creation, retrieval, updating, and deletion of pages, databases, and blocks
+- Search functionality
+- Markdown conversion for improved readability
+- Database querying capabilities
+- Comment functionality
 
-セキュリティ制限付きでファイルシステムにアクセスできます：
+### GitHub Integration
 
-- ファイルの読み書き
-- ディレクトリ操作
-- ファイル検索
-- ファイル情報の取得
+The GitHub integration enables:
 
-### その他の連携
+- Repository creation, search, and management
+- File retrieval, updating, and committing
+- Issue and pull request management
+- Multiple account support
 
-- **Brave Search**: Web検索と位置情報検索
-- **Git**: リポジトリ管理、コミット、ブランチ操作
-- **Shell**: 制限付きシェルコマンド実行
-- **Figma**: デザインファイルの取得や操作
-- **Slack**: メッセージ送信やチャンネル情報取得
+### File System
 
-## 開発情報
+Securely access the file system with:
 
-各MCPサーバーは`src`ディレクトリ内の個別のTypeScriptファイルまたはディレクトリとして実装されています：
+- File reading and writing operations
+- Directory operations
+- File search capabilities
+- File metadata retrieval
 
-- `src/brave-search.ts`: Brave Search API連携
-- `src/filesystem.ts`: ファイルシステム操作
-- `src/git.ts`: Git操作
-- `src/github.ts` & `src/github/`: GitHub API連携
-- `src/shell.ts`: シェルコマンド実行
-- `src/figma.ts`: Figma API連携
-- `src/slack.ts`: Slack API連携
-- `src/firecrawl.ts`: Webスクレイピング
-- `src/notion.ts` & `src/notion/`: Notion API連携
+### Additional Integrations
 
-新機能を追加するには：
+- **Brave Search**: Web and local search capabilities
+- **Git**: Repository management, commits, branch operations
+- **Shell**: Controlled shell command execution
+- **Figma**: Design file retrieval and operations
+- **Slack**: Message sending and channel information retrieval
 
-1. `src`ディレクトリに新しいTypeScriptファイルを作成
-2. `@modelcontextprotocol/sdk`を使用してMCPサーバーを実装
-3. Claude Desktopの設定ファイルに新しいサーバーを追加
+## Development
 
-## セキュリティ考慮事項
+Each MCP server is implemented as a standalone TypeScript file or directory in the `src` folder:
 
-- ファイルシステムとシェルサーバーには、不正アクセスを防ぐセキュリティ措置が含まれています
-- コマンド実行前に常にユーザー入力を検証してください
-- ファイルシステムアクセスの許可ディレクトリ設定には注意が必要です
-- シェルサーバーでは許可コマンドリストを使用して実行可能なコマンドを制限します
-- APIキーやトークンは適切に保護し、最小権限の原則に従ってください
+- `src/brave-search.ts`: Brave Search API integration
+- `src/filesystem.ts`: File system operations
+- `src/git.ts`: Git operations
+- `src/github.ts` & `src/github/`: GitHub API integration
+- `src/shell.ts`: Shell command execution
+- `src/figma.ts`: Figma API integration
+- `src/slack.ts`: Slack API integration
+- `src/firecrawl.ts`: Web scraping
+- `src/notion.ts` & `src/notion/`: Notion API integration
 
-## 参考資料と謝辞
+To add new functionality:
 
-このプロジェクトは以下のリポジトリをベースにしています：
+1. Create a new TypeScript file in the `src` directory
+2. Implement the MCP server using the `@modelcontextprotocol/sdk`
+3. Add the new server to your Claude Desktop configuration
 
-- [ukkz/claude-ts-mcps](https://github.com/ukkz/claude-ts-mcps) - オリジナルのMCPサーバー集の実装
-- [suekou/mcp-notion-server](https://github.com/suekou/mcp-notion-server) - Notion MCPサーバーの実装参考
+## Security Considerations
 
-その他の参考資料：
+- The filesystem and shell servers include security measures to prevent unauthorized access
+- Always validate user input before executing commands
+- Be cautious when configuring allowed directories for filesystem access
+- Use the command allowlist for the shell server to restrict executable commands
+- Store your API keys and tokens securely and follow the principle of least privilege
+
+## References and Acknowledgements
+
+This project is based on the following repositories:
+
+- [ukkz/claude-ts-mcps](https://github.com/ukkz/claude-ts-mcps) - Original implementation of MCP servers collection
+- [suekou/mcp-notion-server](https://github.com/suekou/mcp-notion-server) - Reference implementation for Notion MCP server
+
+Additional references:
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [MCP Server Quickstart](https://modelcontextprotocol.io/quickstart/server)
 - [Anthropic Claude](https://www.anthropic.com/claude)
 
-## ライセンス
+## License
 
 [MIT License](LICENSE)
