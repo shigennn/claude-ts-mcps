@@ -1,6 +1,7 @@
 # Claude Desktop MCP Servers
 
-A collection of Model Context Protocol (MCP) servers designed to enhance Claude Desktop with various integrations and capabilities. This project leverages the Claude Pro subscription by enabling Claude AI to interact with external services and APIs through the Model Context Protocol.
+A collection of Model Context Protocol (MCP) servers designed to enhance Claude Desktop with various integrations and capabilities.
+This project leverages the Claude Pro subscription by enabling Claude AI to interact with external services and APIs through the Model Context Protocol.
 
 ## Overview
 
@@ -37,68 +38,69 @@ This project implements several MCP servers that significantly expand Claude Des
 
 ## Configuration
 
-To use these MCP servers with Claude Desktop, you need to create a configuration file that tells Claude how to connect to them. Here's a complete example based on the actual implementation:
+To use these MCP servers with Claude Desktop, you need to create a configuration file that tells Claude how to connect to them.
+Here's a complete example based on the actual implementation:
 
 ```json
 {
   "mcpServers": {
     "brave-search": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\brave-search.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\brave-search.ts"
       ],
       "env": {
         "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY"
       }
     },
     "filesystem": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\filesystem.ts",
-        "C:\\Users\\username"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\filesystem.ts",
+        "C:\\Users\\<YOUR_USERNAME>"
       ]
     },
     "git": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\git.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\git.ts"
       ]
     },
     "github": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\github.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\github.ts"
       ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN"
       }
     },
     "shell": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\shell.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\shell.ts"
       ]
     },
     "figma": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\figma.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\figma.ts"
       ],
       "env": {
         "FIGMA_ACCESS_TOKEN": "YOUR_FIGMA_TOKEN"
       }
     },
     "slack": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\slack.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\slack.ts"
       ],
       "env": {
         "SLACK_BOT_TOKEN": "YOUR_SLACK_BOT_TOKEN",
@@ -106,20 +108,20 @@ To use these MCP servers with Claude Desktop, you need to create a configuration
       }
     },
     "firecrawl": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\firecrawl.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\firecrawl.ts"
       ],
       "env": {
         "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_API_KEY"
       }
     },
     "notion": {
-      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "command": "C:\\Users\\<YOUR_USERNAME>\\.bun\\bin\\bun.exe",
       "args": [
         "run",
-        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\notion.ts"
+        "C:\\Users\\<YOUR_USERNAME>\\Documents\\claude-ts-mcps\\src\\notion.ts"
       ],
       "env": {
         "NOTION_API_KEY": "YOUR_NOTION_API_KEY"
@@ -127,6 +129,16 @@ To use these MCP servers with Claude Desktop, you need to create a configuration
     }
   }
 }
+```
+
+**Note**: The example above uses Windows path format with backslashes (`\\`).
+For macOS or Linux, use forward slashes instead:
+```
+"command": "/Users/<YOUR_USERNAME>/.bun/bin/bun",
+"args": [
+  "run",
+  "/Users/<YOUR_USERNAME>/Documents/claude-ts-mcps/src/brave-search.ts"
+]
 ```
 
 Save this configuration file in the appropriate location:
