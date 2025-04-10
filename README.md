@@ -1,198 +1,183 @@
-# Claude TypeScript MCP Servers
+# Claude Desktop MCP サーバー集
 
-A collection of Model Context Protocol (MCP) servers aimed at software developers who use LLMs for development assistance. While many developers prefer Cline for its direct VSCode integration, it uses a pay-per-use API that becomes costly with heavy usage. This project leverages the flat-rate Claude Pro subscription by connecting Claude Desktop application with custom MCP servers, providing comparable development assistance capabilities without the variable costs.
+Claude Desktop アプリケーションと Model Context Protocol (MCP) を活用して、様々な外部サービスとの連携を実現するためのサーバー集です。このプロジェクトは、Claude Pro のサブスクリプションを最大限に活用し、Claude AIに追加の機能を提供します。
 
-日本語による解説記事: [Cline任せでコード書いてたらAPIクレジットが爆散したのでClaude Desktop + MCPをいい感じにしてサブスクだけで無双する](https://zenn.dev/ukkz/articles/c8726063edd2cd)
+## 概要
 
-## Overview
+このプロジェクトでは、以下のようなMCPサーバーを実装しています：
 
-This project implements several MCP servers that can be used with Claude Desktop to enhance its capabilities for software development:
+- **Brave Search**: Web検索と位置情報検索機能を提供（Brave Search API使用）
+- **Filesystem**: ファイルシステム操作（セキュリティ制限付き）
+- **Git**: Gitリポジトリ管理機能
+- **GitHub**: GitHub APIとの連携（リポジトリ、Issue、PRなど）
+- **Shell**: シェルコマンド実行環境
+- **Figma**: FigmaのAPIとの連携
+- **Slack**: Slack APIとの連携
+- **Firecrawl**: Webスクレイピング機能
+- **Notion**: Notion APIとの連携（マークダウン変換機能付き）
 
-- **Brave Search**: Provides web search and local search functionality using the Brave Search API
-- **Filesystem**: Enables file system operations with security restrictions
-- **Git**: Provides Git functionality for managing repositories
-- **GitHub**: Enables interaction with GitHub repositories, issues, pull requests, and more
-- **Shell**: Allows execution of shell commands in a controlled environment
-- **Puppeteer**: Enables browser automation and web interaction through Puppeteer
-- **Fetch**: Retrieves content from URLs and converts HTML to Markdown for improved readability
+## 要件
 
-## Requirements
+- [Node.js](https://nodejs.org/) (v18以上)
+- [Bun](https://bun.sh/) (JavaScript/TypeScriptランタイム)
+- [Claude Desktop](https://anthropic.com/claude) アプリケーション
 
-- [Node.js](https://nodejs.org/) (v18+)
-- [Bun](https://bun.sh/) as the JavaScript/TypeScript runtime
-- [Claude Desktop](https://anthropic.com/claude) application
+## インストール方法
 
-## Installation
-
-1. Clone the repository:
+1. リポジトリをクローン：
    ```
-   git clone https://github.com/yourusername/claude-ts-mcps.git
+   git clone https://github.com/yourname/claude-ts-mcps.git
    cd claude-ts-mcps
    ```
 
-2. Install dependencies:
+2. 依存関係のインストール：
    ```
    bun install
    ```
 
-## Configuration
+## 設定方法
 
-To use these MCP servers with Claude Desktop, you need to create a configuration file that tells Claude how to connect to them. Here's an example configuration:
+Claude Desktopでこれらのサーバーを使用するには、設定ファイルを作成してClaude Desktopに読み込ませる必要があります。以下は設定例です：
 
 ```json
 {
-    "mcpServers": {
-        "brave-search": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/brave-search.ts"
-            ],
-            "env": {
-                "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY"
-            }
-        },
-        "filesystem": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/filesystem.ts",
-                "/Users/username"
-            ]
-        },
-        "git": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/git.ts"
-            ]
-        },
-        "github": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/github.ts"
-            ],
-            "env": {
-                "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_DEFAULT_TOKEN",
-                "GITHUB_TOKEN_WORK": "YOUR_WORK_ACCOUNT_TOKEN",
-                "GITHUB_TOKEN_PERSONAL": "YOUR_PERSONAL_ACCOUNT_TOKEN"
-            }
-        },
-        "shell": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/shell.ts"
-            ]
-        },
-        "puppeteer": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/puppeteer.ts"
-            ]
-        },
-        "fetch": {
-            "command": "/Users/username/.bun/bin/bun",
-            "args": [
-                "run",
-                "/Users/username/Documents/claude-ts-mcps/src/fetch.ts"
-            ],
-            "env": {
-                "CUSTOM_USER_AGENT": "YOUR_CUSTOM_USER_AGENT", // Optional
-                "IGNORE_ROBOTS_TXT": "false"                   // Optional, set to true to ignore robots.txt
-            }
-        }
+  "mcpServers": {
+    "brave-search": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\brave-search.ts"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY"
+      }
+    },
+    "filesystem": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\filesystem.ts",
+        "C:\\Users\\username"
+      ]
+    },
+    "git": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\git.ts"
+      ]
+    },
+    "github": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\github.ts"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN"
+      }
+    },
+    "notion": {
+      "command": "C:\\Users\\username\\.bun\\bin\\bun.exe",
+      "args": [
+        "run",
+        "C:\\Users\\username\\Documents\\claude-ts-mcps\\src\\notion.ts"
+      ],
+      "env": {
+        "NOTION_API_KEY": "YOUR_NOTION_TOKEN"
+      }
     }
+  }
 }
 ```
 
-Save this configuration as `claude_desktop_config.json` and configure Claude Desktop to use it.
+この設定ファイルを `%APPDATA%\Claude\claude_desktop_config.json`（Windowsの場合）または `~/Library/Application Support/Claude/claude_desktop_config.json`（Macの場合）に保存してください。
 
-### Multiple GitHub Account Support
+## 使用方法
 
-The GitHub MCP server supports switching between multiple GitHub accounts. You can set up multiple account profiles by configuring environment variables:
+1. Claude Desktopを起動
+2. MCPサーバーが自動的に接続されます
+3. チャット中に各種外部サービスとの連携機能が利用可能になります
 
-```json
-"env": {
-    "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_DEFAULT_TOKEN",  // Default account (backward compatible)
-    "GITHUB_TOKEN_WORK": "YOUR_WORK_ACCOUNT_TOKEN",       // Work account profile
-    "GITHUB_TOKEN_PERSONAL": "YOUR_PERSONAL_ACCOUNT_TOKEN" // Personal account profile
-}
-```
+## 機能詳細
 
-To use a specific account profile in your requests, add the `account_profile` parameter to any GitHub API call:
+### Notion連携
 
-```json
-{
-    "owner": "username",
-    "repo": "repo-name",
-    "path": "path/to/file.txt",
-    "account_profile": "work"  // Will use the GITHUB_TOKEN_WORK environment variable
-}
-```
+Notion APIと連携し、以下の機能を提供します：
 
-If no `account_profile` is specified, the default `GITHUB_PERSONAL_ACCESS_TOKEN` will be used.
+- ページ、データベース、ブロックの取得・作成・更新・削除
+- 検索機能
+- マークダウン変換機能（読みやすさ向上）
+- データベースクエリ機能
+- コメント機能
 
-### Fetch Server Configuration
+### GitHub連携
 
-The Fetch MCP server provides customization options through environment variables:
+GitHubとの連携により、以下の操作が可能になります：
 
-```json
-"env": {
-    "CUSTOM_USER_AGENT": "YOUR_CUSTOM_USER_AGENT", // Optional: Specify a custom User-Agent header
-    "IGNORE_ROBOTS_TXT": "false"                   // Optional: Set to "true" to bypass robots.txt rules
-}
-```
+- リポジトリの作成・検索・操作
+- ファイルの取得・更新・コミット
+- イシューとプルリクエストの管理
+- 複数アカウントのサポート
 
-- `CUSTOM_USER_AGENT`: Allows you to define a specific User-Agent string for HTTP requests, which can be useful when certain websites restrict access based on the client identification.
-- `IGNORE_ROBOTS_TXT`: By default (false), the fetch server respects robots.txt rules that websites set to control web crawlers. Setting this to "true" disables this restriction, but should be used responsibly.
+### ファイルシステム
 
-## Usage
+セキュリティ制限付きでファイルシステムにアクセスできます：
 
-1. Start Claude Desktop
-2. Load the configuration file
-3. Claude will now have access to the additional tools provided by these MCP servers
+- ファイルの読み書き
+- ディレクトリ操作
+- ファイル検索
+- ファイル情報の取得
 
-## Development
+### その他の連携
 
-Each MCP server is implemented as a standalone TypeScript file in the `src` directory:
+- **Brave Search**: Web検索と位置情報検索
+- **Git**: リポジトリ管理、コミット、ブランチ操作
+- **Shell**: 制限付きシェルコマンド実行
+- **Figma**: デザインファイルの取得や操作
+- **Slack**: メッセージ送信やチャンネル情報取得
 
-- `src/brave-search.ts`: Brave Search API integration
-- `src/filesystem.ts`: File system operations
-- `src/git.ts`: Git operations
-- `src/github.ts`: GitHub API integration for repository management, issues, PRs, etc.
-- `src/shell.ts`: Shell command execution
-- `src/puppeteer.ts`: Browser automation and web interaction
-- `src/fetch.ts`: URL content retrieval and HTML-to-Markdown conversion
+## 開発情報
 
-The GitHub MCP server has a modular structure:
-- `src/github/common/`: Common utilities, interfaces, and types
-- `src/github/operations/`: Implementation of various GitHub API operations
-- `src/github/tools/`: Tool definitions for the MCP server
+各MCPサーバーは`src`ディレクトリ内の個別のTypeScriptファイルまたはディレクトリとして実装されています：
 
-To add new functionality:
+- `src/brave-search.ts`: Brave Search API連携
+- `src/filesystem.ts`: ファイルシステム操作
+- `src/git.ts`: Git操作
+- `src/github.ts` & `src/github/`: GitHub API連携
+- `src/shell.ts`: シェルコマンド実行
+- `src/figma.ts`: Figma API連携
+- `src/slack.ts`: Slack API連携
+- `src/firecrawl.ts`: Webスクレイピング
+- `src/notion.ts` & `src/notion/`: Notion API連携
 
-1. Create a new TypeScript file in the `src` directory
-2. Implement the MCP server using the `@modelcontextprotocol/sdk`
-3. Add the new server to your Claude Desktop configuration
+新機能を追加するには：
 
-## Security Considerations
+1. `src`ディレクトリに新しいTypeScriptファイルを作成
+2. `@modelcontextprotocol/sdk`を使用してMCPサーバーを実装
+3. Claude Desktopの設定ファイルに新しいサーバーを追加
 
-- The filesystem and shell servers include security measures to prevent unauthorized access
-- Always validate user input before executing commands
-- Be cautious when configuring allowed directories for filesystem access
-- Use the command allowlist for the shell server to restrict executable commands
-- The fetch server respects robots.txt directives by default to prevent scraping restricted sites
-- Store your GitHub personal access tokens securely and use appropriate token permissions
+## セキュリティ考慮事項
 
-## References
+- ファイルシステムとシェルサーバーには、不正アクセスを防ぐセキュリティ措置が含まれています
+- コマンド実行前に常にユーザー入力を検証してください
+- ファイルシステムアクセスの許可ディレクトリ設定には注意が必要です
+- シェルサーバーでは許可コマンドリストを使用して実行可能なコマンドを制限します
+- APIキーやトークンは適切に保護し、最小権限の原則に従ってください
+
+## 参考資料と謝辞
+
+このプロジェクトは以下のリポジトリをベースにしています：
+
+- [ukkz/claude-ts-mcps](https://github.com/ukkz/claude-ts-mcps) - オリジナルのMCPサーバー集の実装
+- [suekou/mcp-notion-server](https://github.com/suekou/mcp-notion-server) - Notion MCPサーバーの実装参考
+
+その他の参考資料：
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [MCP Server Quickstart](https://modelcontextprotocol.io/quickstart/server)
 - [Anthropic Claude](https://www.anthropic.com/claude)
 
-## License
+## ライセンス
 
 [MIT License](LICENSE)
